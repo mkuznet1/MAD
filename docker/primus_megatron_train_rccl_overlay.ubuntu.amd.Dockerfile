@@ -323,5 +323,15 @@ LABEL rdma_core_version="${RDMA_CORE_VERSION}"
 
 WORKDIR ${WORKSPACE_DIR}
 
+# GPT-OSS-120B pretrain configs: upstream Primus (baked into rocm/primus:v26.4)
+# only ships examples/megatron/configs/MI355X/gpt_oss_120B-*.yaml. Add MI300X /
+# MI325X (gfx942) counterparts with the same parallelism (TP1 x PP2 x VP2 x EP8
+# = 16 GPUs, matching a 2-node x 8-GPU scaleout run) so
+# scripts/primus/megatron-lm/primus_megatron-lm_benchmark_report.sh can resolve
+# examples/megatron/configs/$CONFIG_DEVICE/gpt_oss_120B-$DATATYPE-pretrain.yaml
+# on gfx942 the same way it already does for GPT-OSS-20B.
+COPY docker/primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-BF16-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-BF16-pretrain.yaml
+COPY docker/primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-FP8-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-FP8-pretrain.yaml
+
 # Record final Python environment for posterity.
 RUN pip3 list

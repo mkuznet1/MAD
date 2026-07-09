@@ -976,17 +976,21 @@ elif [ "$MODEL_REPO" == "GPT-OSS-20B" ]; then
 elif [ "$MODEL_REPO" == "GPT-OSS-120B" ]; then
   echo "[INFO] $MODEL_REPO TRAINING"
   SEQ_LEN=4096
-  if [[ "$DEVICE" == "MI355X" || "$DEVICE" == "MI350X" ]]; then
-    export EXP=examples/megatron/configs/MI355X/gpt_oss_120B-$DATATYPE-pretrain.yaml
+  # examples/megatron/configs/$CONFIG_DEVICE/gpt_oss_120B-$DATATYPE-pretrain.yaml:
+  # upstream Primus only ships the MI355X variant; MI300X/MI325X counterparts are
+  # added by docker/primus_megatron_train_rccl_overlay.ubuntu.amd.Dockerfile
+  # (see docker/primus_configs/gpt_oss_120B/MI300X/), same parallelism (TP1 x PP2
+  # x VP2 x EP8 = 16 GPUs) so a 2-node scaleout run saturates exactly 2x8 GPUs.
+  export EXP=examples/megatron/configs/$CONFIG_DEVICE/gpt_oss_120B-$DATATYPE-pretrain.yaml
+  if [[ ! -f "$EXP" ]]; then
+    echo "Error: Config file not found: $EXP"
+    echo "Hint: add gpt_oss_120B-$DATATYPE-pretrain.yaml for $CONFIG_DEVICE in Primus configs."
+  else
     MBS=$(grep -E '^\s*micro_batch_size:' $EXP | head -n1 | awk '{print $2}' | tr -d '\r')
     GBS=$(grep -E '^\s*global_batch_size:' $EXP | head -n1 | awk '{print $2}' | tr -d '\r')
     echo "[INFO] Extracted MBS=$MBS, GBS=$GBS from config: $EXP"
-    bash runner/primus-cli direct \
-      --log_file /tmp/primus_$MODEL_REPO.log \
-      -- train pretrain \
-      --config $EXP 2>&1 | tee -a $TRAIN_LOG
-  elif [[ "$DEVICE" == "MI300X" || "$DEVICE" == "MI325X" ]]; then
-    echo "Error: $MODEL_REPO is not supported on $DEVICE. Only MI355X is supported."
+    GBS_OVERRIDE=$(scaleout_gbs_override "$MBS" "$GBS")
+    run_primus "$EXP" $GBS_OVERRIDE
   fi
   if [ -f "$TRAIN_LOG" ]; then
     echo "[INFO] Benchmarking"
