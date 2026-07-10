@@ -169,6 +169,15 @@ if [ "$DEVICE" == "MI350X" ]; then
 else
   CONFIG_DEVICE="$DEVICE"
 fi
+# Optional override of the config directory only (not DEVICE, so datatype
+# support and device-specific numeric flags keep using the real hardware).
+# Lets an MI355X run reuse the memory-tuned MI300X configs (smaller
+# micro_batch_size, virtual pipeline parallelism, full recompute) to work
+# around MoE-forward OOMs that the MI355X-native config hits at this shape.
+if [ -n "${PRIMUS_CONFIG_DEVICE:-}" ]; then
+  echo "[INFO] Overriding CONFIG_DEVICE ${CONFIG_DEVICE} -> ${PRIMUS_CONFIG_DEVICE} (PRIMUS_CONFIG_DEVICE set)"
+  CONFIG_DEVICE="${PRIMUS_CONFIG_DEVICE}"
+fi
 
 # Set common environment variables.
 # Keep compatibility with SLURM/madengine distributed env and only fall back to

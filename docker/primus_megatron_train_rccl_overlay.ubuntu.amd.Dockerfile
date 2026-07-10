@@ -330,8 +330,8 @@ WORKDIR ${WORKSPACE_DIR}
 # scripts/primus/megatron-lm/primus_megatron-lm_benchmark_report.sh can resolve
 # examples/megatron/configs/$CONFIG_DEVICE/gpt_oss_120B-$DATATYPE-pretrain.yaml
 # on gfx942 the same way it already does for GPT-OSS-20B.
-COPY docker/primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-BF16-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-BF16-pretrain.yaml
-COPY docker/primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-FP8-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-FP8-pretrain.yaml
+COPY primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-BF16-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-BF16-pretrain.yaml
+COPY primus_configs/gpt_oss_120B/MI300X/gpt_oss_120B-FP8-pretrain.yaml /workspace/Primus/examples/megatron/configs/MI300X/gpt_oss_120B-FP8-pretrain.yaml
 
 # Record final Python environment for posterity.
 RUN pip3 list
