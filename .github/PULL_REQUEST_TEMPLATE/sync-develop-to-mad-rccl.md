@@ -1,4 +1,9 @@
-# Sync: `develop` -> `mad-rccl`
+<!--
+PR title (copy, replace the date):
+    Sync develop into mad-rccl (YYYY-MM-DD)
+Add a qualifier only when the sync is not mechanical, e.g.
+    Sync develop into mad-rccl (YYYY-MM-DD) - resolves models.json conflict
+-->
 
 Routine forward-merge of upstream `develop` into the long-lived `mad-rccl`
 branch. No functional changes are authored in this PR; anything beyond the
