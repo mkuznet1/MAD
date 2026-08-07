@@ -9,6 +9,13 @@ Routine forward-merge of upstream `develop` into the long-lived `mad-rccl`
 branch. No functional changes are authored in this PR; anything beyond the
 merge itself must be called out in *Deviations from a plain merge* below.
 
+<!--
+Two hard requirements, see "Reproduce this sync" at the bottom:
+  * the head branch must be a dedicated sync branch, never `develop` itself;
+  * merge with "Squash and merge" - mad-rccl requires linear history.
+-->
+
+
 ## Summary
 
 <!--
@@ -58,7 +65,8 @@ anything else that is not a fast, mechanical merge. One bullet per file.
 
 - [ ] `python -c "import json; json.load(open('models.json'))"` passes
 - [ ] `git diff --stat origin/develop..HEAD` shows only mad-rccl-owned files
-- [ ] Merge commit only - `mad-rccl` history is never rebased or force-pushed
+- [ ] Head branch is a dedicated sync branch, not `develop`
+- [ ] Will be merged with **Squash and merge**
 - [ ] Affected multinode benchmark(s) smoke-tested, or explicitly deferred below
 
 Smoke test / deferral note:
@@ -68,14 +76,31 @@ Smoke test / deferral note:
 
 ## Reproduce this sync
 
+`ROCm/MAD` rulesets forbid creating branches (`~ALL` + `creation`, no bypass
+actors), so the sync branch lives in a personal fork and the PR is cross-repo.
+
 ```bash
+git remote add fork git@github.com:<you>/MAD.git   # once
 git fetch origin develop mad-rccl
-git switch -c sync/develop-to-mad-rccl-$(date -u +%Y%m%d) origin/mad-rccl
+BR=sync/develop-to-mad-rccl-$(date -u +%Y%m%d)
+git switch -c "$BR" origin/mad-rccl
 git merge --no-ff origin/develop -m "Sync develop into mad-rccl ($(date -u +%Y-%m-%d))"
+git push -u fork "$BR"
 ```
 
-Then open the PR against `mad-rccl` with this template:
+Open the PR against `mad-rccl` with this template:
 
 ```
-https://github.com/ROCm/MAD/compare/mad-rccl...<sync-branch>?template=sync-develop-to-mad-rccl.md
+https://github.com/ROCm/MAD/compare/mad-rccl...<you>:MAD:<sync-branch>?expand=1&template=sync-develop-to-mad-rccl.md
 ```
+
+Never open the PR with `develop` as the head branch. `mad-rccl` carries commits
+that `develop` does not, so GitHub offers an *Update branch* button that merges
+`mad-rccl` into the head branch - with `develop` as head that would push the
+RCCL-only work onto upstream `develop`.
+
+Merge with **Squash and merge**: the `mad-rccl-branch` ruleset requires linear
+history, so merge commits are rejected. Consequence to keep in mind - after a
+squash `develop` is not an ancestor of `mad-rccl`, so the next sync recomputes
+the same file changes; they normally auto-resolve because both sides hold
+identical content.
